@@ -1,0 +1,31 @@
+<nav style="background: #f4f4f4; padding: 15px; margin-bottom: 20px; border-bottom: 1px solid #ddd;">
+    {% if user.is_authenticated %}
+        <span>Вітаємо, <b>{{ user.username }}</b>!</span> | 
+        <a href="{% url 'quotes:add_author' %}">Додати автора</a> | 
+        <a href="{% url 'quotes:add_quote' %}">Додати цитату</a> | 
+        <form action="{% url 'users:logout' %}" method="post" style="display:inline;">
+            {% csrf_token %}
+            <button type="submit" style="background:none; border:none; color:blue; cursor:pointer; text-decoration:underline; padding:0;">Вийти</button>
+        </form>
+    {% else %}
+        <a href="{% url 'users:login' %}">Увійти</a> | 
+        <a href="{% url 'users:signup' %}">Реєстрація</a>
+    {% endif %}
+</nav>
+
+<h1>Quotes</h1>
+<hr>
+
+{% for quote in quotes %}
+    <div style="margin-bottom: 20px; border-bottom: 1px dashed #ccc;">
+        <p><strong>"{{ quote.quote }}"</strong></p>
+        <p><em>— {{ quote.author.fullname }}</em></p>
+        <p>Tags: 
+            {% for tag in quote.tags.all %}
+                <span>#{{ tag.name }} </span>
+            {% endfor %}
+        </p>
+    </div>
+{% empty %}
+    <p>Цитат поки немає в базі Django.</p>
+{% endfor %}
