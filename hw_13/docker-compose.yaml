@@ -1,0 +1,56 @@
+version: '3.8'
+
+services:
+  # База даних PostgreSQL
+  db:
+    image: postgres:15-alpine
+    container_name: contact_db
+    restart: always
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: contact_manager
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  # Redis для обмеження кількості запитів (Rate Limiting)
+  redis:
+    image: redis:7-alpine
+    container_name: redis_storage
+    ports:
+      - "6379:6379"
+    restart: always
+
+  # pgAdmin для зручного перегляду бази
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: pgadmin_gui
+    restart: always
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@admin.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+    ports:
+      - "8080:80"
+    depends_on:
+      - db
+
+  # Ваш основний додаток FastAPI
+  app:
+    build: .
+    container_name: fastapi_app
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=postgresql://user:password@db:5432/contact_manager
+      - REDIS_HOST=redis
+    env_file:
+      - .env
+    depends_on:
+      - db
+      - redis
+    restart: always
+
+volumes:
+  postgres_data:
